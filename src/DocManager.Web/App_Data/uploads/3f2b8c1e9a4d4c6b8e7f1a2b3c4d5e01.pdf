@@ -1,0 +1,40 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 592 >>
+stream
+BT /F1 22 Tf 72 740 Td (Employee Handbook) Tj ET
+BT /F1 12 Tf 72 700 Td (Welcome to the company!) Tj ET
+BT /F1 12 Tf 72 680 Td () Tj ET
+BT /F1 12 Tf 72 660 Td (1. Working hours: 9:00 - 17:30, Monday to Friday.) Tj ET
+BT /F1 12 Tf 72 640 Td (2. Holidays: 25 days per year plus public holidays.) Tj ET
+BT /F1 12 Tf 72 620 Td (3. Expenses: submit receipts within 30 days.) Tj ET
+BT /F1 12 Tf 72 600 Td (4. IT: report lost devices to the service desk immediately.) Tj ET
+BT /F1 12 Tf 72 580 Td () Tj ET
+BT /F1 12 Tf 72 560 Td (Click anywhere on this page (with 'Add notes' on) to annotate.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000884 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+954
+%%EOF

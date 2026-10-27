@@ -1,0 +1,79 @@
+@using DocManager.Application.Notes
+@model DocumentDetailsViewModel
+@{
+    var document = Model.Document;
+    ViewData["Title"] = document.Title;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+        <h1 class="h3 mb-1">@document.Title</h1>
+        <p class="text-muted small mb-0">
+            @document.FileName &middot; @FileSizeFormatter.Format(document.FileSize) &middot;
+            added @document.DateAdded.ToString("yyyy-MM-dd HH:mm") UTC
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-action="File" asp-route-id="@document.Id" asp-route-download="true">Download</a>
+        <form asp-action="Delete" asp-route-id="@document.Id" method="post"
+              data-confirm="Move &quot;@document.Title&quot; to the recycle bin?">
+            <button type="submit" class="btn btn-outline-danger">Delete</button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-9">
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="annotate-toggle" />
+            <label class="form-check-label" for="annotate-toggle">Add notes &mdash; click anywhere on the document</label>
+        </div>
+
+        <div id="document-viewer" class="document-viewer document-viewer--@Model.PreviewKind.ToString().ToLowerInvariant()"
+             data-notes-url="@Url.Action(nameof(DocManager.Web.Controllers.NotesController.Create), "Notes", new { documentId = document.Id })">
+            @switch (Model.PreviewKind)
+            {
+                case PreviewKind.Image:
+                    <img class="document-viewer__image" src="@Url.Action("File", new { id = document.Id })" alt="@document.Title" />
+                    break;
+                case PreviewKind.Pdf:
+                    <iframe class="document-viewer__frame" src="@Url.Action("File", new { id = document.Id })" title="@document.Title"></iframe>
+                    break;
+                default:
+                    <div class="document-viewer__placeholder">
+                        <p class="mb-2">A preview isn't available for this file type.</p>
+                        <a asp-action="File" asp-route-id="@document.Id" asp-route-download="true">Download @document.FileName</a>
+                    </div>
+                    break;
+            }
+            <div class="document-viewer__layer" data-notes-layer></div>
+        </div>
+    </div>
+
+    <aside class="col-lg-3">
+        <h2 class="h5">Notes</h2>
+        <p id="notes-empty" class="text-muted small">No notes yet.</p>
+        <ol id="notes-list" class="notes-list list-unstyled"></ol>
+    </aside>
+</div>
+
+<template id="note-form-template">
+    <form class="note-form card shadow-sm" novalidate>
+        <div class="card-body p-2">
+            <label class="visually-hidden" for="note-text">Note</label>
+            <textarea id="note-text" name="noteText" class="form-control form-control-sm mb-2" rows="3"
+                      maxlength="@CreateNoteRequestValidator.NoteTextMaxLength" placeholder="Write a note..." required></textarea>
+            <div class="text-danger small mb-2" data-error hidden></div>
+            <div class="d-flex justify-content-end gap-1">
+                <button type="button" class="btn btn-sm btn-link" data-cancel>Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            </div>
+        </div>
+    </form>
+</template>
+
+<script type="application/json" id="notes-data">@Json.Serialize(document.Notes)</script>
+
+@section Scripts {
+    <script src="~/js/document-notes.js" asp-append-version="true"></script>
+}

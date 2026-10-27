@@ -1,0 +1,46 @@
+@model RecycleBinViewModel
+@{
+    ViewData["Title"] = "Recycle bin";
+    var pagination = new PaginationViewModel(Model.Documents.Page, Model.Documents.TotalPages, "RecycleBin");
+}
+
+<h1 class="h3 mb-3">Recycle bin</h1>
+
+@if (Model.Documents.Items.Count == 0)
+{
+    <div class="card card-body text-center text-muted">The recycle bin is empty.</div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">File</th>
+                        <th scope="col">Deleted (UTC)</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var document in Model.Documents.Items)
+                    {
+                        <tr>
+                            <td>@document.Title</td>
+                            <td class="text-muted small">@document.FileName</td>
+                            <td class="text-nowrap">@document.DeletedDate?.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-end">
+                                <form asp-action="Restore" asp-route-id="@document.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Restore</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<partial name="_Pagination" model="pagination" />

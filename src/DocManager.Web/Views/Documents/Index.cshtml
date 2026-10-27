@@ -1,0 +1,73 @@
+@model DocumentIndexViewModel
+@{
+    ViewData["Title"] = "Documents";
+    var pagination = new PaginationViewModel(Model.Documents.Page, Model.Documents.TotalPages, "Index", Model.Search);
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Documents</h1>
+    <a class="btn btn-primary" asp-action="Upload">Upload document</a>
+</div>
+
+<form method="get" asp-action="Index" class="row g-2 mb-3" role="search">
+    <div class="col-sm-8 col-md-6">
+        <input type="search" name="search" value="@Model.Search" class="form-control"
+               placeholder="Search by title" aria-label="Search by title" maxlength="200" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Search</button>
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <a class="btn btn-link" asp-action="Index">Clear</a>
+        }
+    </div>
+</form>
+
+@if (Model.Documents.Items.Count == 0)
+{
+    <div class="card card-body text-center text-muted">
+        @(string.IsNullOrWhiteSpace(Model.Search)
+            ? "No documents yet. Upload your first one!"
+            : $"No documents match \"{Model.Search}\".")
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">File</th>
+                        <th scope="col" class="text-end">Size</th>
+                        <th scope="col">Added (UTC)</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var document in Model.Documents.Items)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@document.Id">@document.Title</a></td>
+                            <td class="text-muted small">@document.FileName</td>
+                            <td class="text-end text-nowrap">@FileSizeFormatter.Format(document.FileSize)</td>
+                            <td class="text-nowrap">@document.DateAdded.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@document.Id">Open</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="File" asp-route-id="@document.Id" asp-route-download="true">Download</a>
+                                <form asp-action="Delete" asp-route-id="@document.Id" method="post" class="d-inline"
+                                      data-confirm="Move &quot;@document.Title&quot; to the recycle bin?">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <p class="text-muted small mt-2">@Model.Documents.TotalCount document(s)</p>
+}
+
+<partial name="_Pagination" model="pagination" />
