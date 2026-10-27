@@ -28,5 +28,6 @@ internal sealed class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasData(SeedData.Documents);
+        builder.HasData(SeedData.DeletedDocuments);
     }
 }

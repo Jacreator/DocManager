@@ -7,19 +7,13 @@ soft delete documents and restore them from a recycle bin. Every query is scoped
 
 ## Architecture
 
-```
-            ┌──────────────────────┐
-            │   DocManager.Web     │  MVC controllers, Razor views, JS, error handling
-            └───────┬──────────────┘
-                    │ uses services/DTOs          (references Infrastructure only to call AddInfrastructure)
-            ┌───────▼──────────────┐       ┌──────────────────────────┐
-            │ DocManager.Application│◄──────┤ DocManager.Infrastructure │  EF Core, repositories,
-            └───────┬──────────────┘       └────────────┬─────────────┘  UnitOfWork, file storage
-                    │                                   │
-            ┌───────▼───────────────────────────────────▼┐
-            │              DocManager.Domain             │  Entities, repository interfaces
-            └────────────────────────────────────────────┘
-```
+Dependencies point inward only:
+
+- **DocManager.Domain** is the core and depends on no other project.
+- **DocManager.Application** depends on Domain.
+- **DocManager.Infrastructure** depends on Application and Domain, and implements their interfaces (repositories, unit of work, file storage).
+- **DocManager.Web** depends on Application for services and DTOs. It references Infrastructure only to call `AddInfrastructure` during DI registration.
+- **DocManager.Tests** depends on Web, and through it on all other projects.
 
 | Project | Responsibility |
 | --- | --- |
@@ -74,8 +68,16 @@ To apply them manually:
 dotnet ef database update -p src/DocManager.Infrastructure/DocManager.Infrastructure.csproj -s src/DocManager.Web/DocManager.Web.csproj
 ```
 
-The initial migration seeds three sample documents for company 1. Their files ship in
+The migrations seed sample data for two companies. The files ship in
 `src/DocManager.Web/App_Data/uploads`, so previews work straight away.
+
+| Company | Documents | Recycle bin | Notes |
+| --- | --- | --- | --- |
+| 1 | Employee Handbook, Office Floor Plan, Quarterly Report Q1 (Ids 1–3) | – | – |
+| 2 | Supplier Contract, Warehouse Layout, Board Meeting Minutes (Ids 1001–1003) | Price List 2025 (Id 1004) | One note on Supplier Contract |
+
+Seed rows added after the initial migration use Ids from 1001 upwards. Real uploads get identity Ids, so seed
+rows with low Ids would collide with them in existing databases.
 
 ### 3. Run
 
@@ -85,6 +87,20 @@ dotnet run --project src/DocManager.Web
 ```
 
 Then browse to http://localhost:5285.
+
+### Trying company isolation
+
+Until real authentication is added, the current company comes from `Company:DefaultCompanyId`.
+Start the app as company 2 to see the other company's data:
+
+```bash
+Company__DefaultCompanyId=2 dotnet run --project src/DocManager.Web
+```
+
+Company 2 sees only its own documents, notes and recycle bin. Company 1's URLs (for example
+`/Documents/Details/1` or `/Documents/File/1`) return 404, and so do company 2's URLs when running as company 1.
+`CompanyIsolationTests` checks this automatically for listing, search, details, files, notes, delete,
+the recycle bin and restore.
 
 ### Working with migrations
 

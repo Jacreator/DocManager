@@ -17,7 +17,7 @@ namespace DocManager.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.33")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -105,6 +105,51 @@ namespace DocManager.Infrastructure.Persistence.Migrations
                             FileSize = 916L,
                             StoredFileName = "3f2b8c1e9a4d4c6b8e7f1a2b3c4d5e03.pdf",
                             Title = "Quarterly Report Q1"
+                        },
+                        new
+                        {
+                            Id = 1001,
+                            CompanyId = 2,
+                            ContentType = "application/pdf",
+                            DateAdded = new DateTime(2026, 3, 1, 8, 0, 0, 0, DateTimeKind.Utc),
+                            FileName = "supplier-contract.pdf",
+                            FileSize = 960L,
+                            StoredFileName = "3f2b8c1e9a4d4c6b8e7f1a2b3c4d5e04.pdf",
+                            Title = "Supplier Contract"
+                        },
+                        new
+                        {
+                            Id = 1002,
+                            CompanyId = 2,
+                            ContentType = "image/png",
+                            DateAdded = new DateTime(2026, 3, 18, 13, 45, 0, 0, DateTimeKind.Utc),
+                            FileName = "warehouse-layout.png",
+                            FileSize = 2521L,
+                            StoredFileName = "3f2b8c1e9a4d4c6b8e7f1a2b3c4d5e05.png",
+                            Title = "Warehouse Layout"
+                        },
+                        new
+                        {
+                            Id = 1003,
+                            CompanyId = 2,
+                            ContentType = "application/pdf",
+                            DateAdded = new DateTime(2026, 5, 20, 16, 0, 0, 0, DateTimeKind.Utc),
+                            FileName = "board-meeting-minutes.pdf",
+                            FileSize = 960L,
+                            StoredFileName = "3f2b8c1e9a4d4c6b8e7f1a2b3c4d5e06.pdf",
+                            Title = "Board Meeting Minutes"
+                        },
+                        new
+                        {
+                            Id = 1004,
+                            CompanyId = 2,
+                            ContentType = "application/pdf",
+                            DateAdded = new DateTime(2025, 11, 3, 10, 0, 0, 0, DateTimeKind.Utc),
+                            DeletedDate = new DateTime(2026, 1, 15, 12, 0, 0, 0, DateTimeKind.Utc),
+                            FileName = "price-list-2025.pdf",
+                            FileSize = 821L,
+                            StoredFileName = "3f2b8c1e9a4d4c6b8e7f1a2b3c4d5e07.pdf",
+                            Title = "Price List 2025"
                         });
                 });
 
@@ -140,6 +185,17 @@ namespace DocManager.Infrastructure.Persistence.Migrations
                     b.HasIndex("DocumentId");
 
                     b.ToTable("DocumentNotes", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1001,
+                            DateAdded = new DateTime(2026, 3, 2, 9, 30, 0, 0, DateTimeKind.Utc),
+                            DocumentId = 1001,
+                            NoteText = "Company 2 only: renegotiate payment terms before renewal.",
+                            PositionLeft = 55m,
+                            PositionTop = 30m
+                        });
                 });
 
             modelBuilder.Entity("DocManager.Domain.Entities.DocumentNote", b =>

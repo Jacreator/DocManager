@@ -17,5 +17,7 @@ internal sealed class DocumentNoteConfiguration : IEntityTypeConfiguration<Docum
         builder.Property(n => n.DateAdded).IsRequired();
 
         builder.HasIndex(n => n.DocumentId);
+
+        builder.HasData(SeedData.Notes);
     }
 }
