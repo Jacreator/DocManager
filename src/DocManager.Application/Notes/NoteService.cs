@@ -22,7 +22,7 @@ public sealed class NoteService(
 
         if (await documents.GetByIdAsync(documentId, ct) is null)
         {
-            return Result<NoteDto>.NotFound(DocumentNotFound(documentId));
+            return Result<NoteDto>.NotFound(Errors.DocumentNotFound(documentId));
         }
 
         var note = request.ToEntity(documentId);
@@ -37,12 +37,10 @@ public sealed class NoteService(
     {
         if (await documents.GetByIdAsync(documentId, ct) is null)
         {
-            return Result<IReadOnlyList<NoteDto>>.NotFound(DocumentNotFound(documentId));
+            return Result<IReadOnlyList<NoteDto>>.NotFound(Errors.DocumentNotFound(documentId));
         }
 
         var documentNotes = await notes.GetByDocumentAsync(documentId, ct);
         return Result<IReadOnlyList<NoteDto>>.Success(documentNotes.Select(n => n.ToDto()).ToList());
     }
-
-    private static string DocumentNotFound(int id) => $"Document {id} was not found.";
 }

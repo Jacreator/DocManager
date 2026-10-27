@@ -70,7 +70,7 @@ public sealed class DocumentService(
     {
         var document = await documents.GetWithNotesAsync(id, ct);
         return document is null
-            ? Result<DocumentDetailsDto>.NotFound(DocumentNotFound(id))
+            ? Result<DocumentDetailsDto>.NotFound(Errors.DocumentNotFound(id))
             : Result<DocumentDetailsDto>.Success(document.ToDetailsDto());
     }
 
@@ -79,7 +79,7 @@ public sealed class DocumentService(
         var document = await documents.GetByIdAsync(id, ct);
         if (document is null)
         {
-            return Result.NotFound(DocumentNotFound(id));
+            return Result.NotFound(Errors.DocumentNotFound(id));
         }
 
         document.SoftDelete();
@@ -101,7 +101,7 @@ public sealed class DocumentService(
         var document = await documents.GetDeletedByIdAsync(id, ct);
         if (document is null)
         {
-            return Result.NotFound(DocumentNotFound(id));
+            return Result.NotFound(Errors.DocumentNotFound(id));
         }
 
         document.Restore();
@@ -117,7 +117,7 @@ public sealed class DocumentService(
         var document = await documents.GetByIdAsync(id, ct);
         if (document is null)
         {
-            return Result<FileDownloadDto>.NotFound(DocumentNotFound(id));
+            return Result<FileDownloadDto>.NotFound(Errors.DocumentNotFound(id));
         }
 
         var content = await fileStorage.OpenReadAsync(document.StoredFileName, ct);
@@ -125,13 +125,11 @@ public sealed class DocumentService(
         {
             logger.LogWarning("File {StoredFileName} for document {DocumentId} is missing from storage",
                 document.StoredFileName, id);
-            return Result<FileDownloadDto>.NotFound($"The file for document {id} could not be found.");
+            return Result<FileDownloadDto>.NotFound(Errors.DocumentFileNotFound(id));
         }
 
         return Result<FileDownloadDto>.Success(new FileDownloadDto(content, document.ContentType, document.FileName));
     }
 
     private static int NormalizePage(int page) => Math.Max(page, 1);
-
-    private static string DocumentNotFound(int id) => $"Document {id} was not found.";
 }
