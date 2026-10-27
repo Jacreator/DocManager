@@ -76,8 +76,11 @@ The migrations seed sample data for two companies. The files ship in
 | 1 | Employee Handbook, Office Floor Plan, Quarterly Report Q1 (Ids 1–3) | – | – |
 | 2 | Supplier Contract, Warehouse Layout, Board Meeting Minutes (Ids 1001–1003) | Price List 2025 (Id 1004) | One note on Supplier Contract |
 
-Seed rows added after the initial migration use Ids from 1001 upwards. Real uploads get identity Ids, so seed
-rows with low Ids would collide with them in existing databases.
+*The seed data is sample data for testing in a local development environment only, not real data.
+Seed rows are inserted by their migration, and each migration runs only once per database: EF Core records it in
+`__EFMigrationsHistory` and skips it on later runs. So the seed is never inserted again once it is in the database,
+and a seed row you delete stays deleted. Seed rows added after the initial migration use Ids from 1001 upwards,
+because real uploads get identity Ids and seed rows with low Ids could collide with them in an existing database.*
 
 ### 3. Run
 
@@ -86,21 +89,58 @@ dotnet build
 dotnet run --project src/DocManager.Web
 ```
 
-Then browse to http://localhost:5285.
+Then browse to <http://localhost:5285>. This runs as company 1; see
+[Running as a different company](#running-as-a-different-company) to switch.
 
-### Trying company isolation
+### Running as a different company
 
-Until real authentication is added, the current company comes from `Company:DefaultCompanyId`.
-Start the app as company 2 to see the other company's data:
+There is no login yet, so the app decides which company you are from the `Company:DefaultCompanyId` setting.
+It is `1` in `appsettings.json`, so `dotnet run` always runs as company 1.
+
+To run as **company 2**, start the app like this:
 
 ```bash
 Company__DefaultCompanyId=2 dotnet run --project src/DocManager.Web
 ```
 
-Company 2 sees only its own documents, notes and recycle bin. Company 1's URLs (for example
-`/Documents/Details/1` or `/Documents/File/1`) return 404, and so do company 2's URLs when running as company 1.
-`CompanyIsolationTests` checks this automatically for listing, search, details, files, notes, delete,
+How the command works:
+
+- `Company__DefaultCompanyId=2` sets an environment variable for this one command only.
+  ASP.NET Core reads environment variables as configuration, and the double underscore `__` stands for the `:`
+  section separator. So this overrides `Company:DefaultCompanyId` from `appsettings.json` without editing any file.
+- Nothing is saved. Run plain `dotnet run --project src/DocManager.Web` again to go back to company 1.
+- Only one copy of the app can listen on port 5285. Stop the running copy (`Ctrl+C`) before starting it as another company.
+
+On Windows, set the variable first:
+
+```powershell
+# PowerShell
+$env:Company__DefaultCompanyId = "2"; dotnet run --project src/DocManager.Web
+```
+
+```cmd
+:: Command Prompt
+set Company__DefaultCompanyId=2 && dotnet run --project src/DocManager.Web
+```
+
+In PowerShell and Command Prompt the variable stays set for the rest of that terminal session. Close the terminal,
+or set it back to `1`, to return to company 1.
+
+#### Checking that companies can't see each other's data
+
+1. Run as company 1 and open <http://localhost:5285>. You see Employee Handbook, Office Floor Plan and Quarterly Report Q1.
+2. Note the URL of one of your documents, for example <http://localhost:5285/Documents/Details/1>.
+3. Stop the app and start it as company 2. You now see Supplier Contract, Warehouse Layout and Board Meeting Minutes,
+   and Price List 2025 is in the recycle bin.
+4. Open the company 1 URL from step 2. You get a "not found" page, and `/Documents/File/1` returns 404 too.
+   Company 1 gets the same result for company 2's documents (for example `/Documents/Details/1001`).
+
+The app returns "not found" rather than "access denied", so it doesn't reveal that another company's document exists.
+`CompanyIsolationTests` checks all of this automatically for listing, search, details, files, notes, delete,
 the recycle bin and restore.
+
+> This setting is a stand-in until real authentication exists. Then the company will come from the signed-in user's
+> `company_id` claim (see `HttpCurrentCompany`), and users won't be able to choose it.
 
 ### Working with migrations
 
@@ -131,8 +171,6 @@ No SQL Server is needed: repository and integration tests use SQLite in-memory d
 | `FileStorage:RootPath` | `App_Data/uploads` | Upload folder (absolute, or relative to the content root). Outside `wwwroot`. |
 | `Company:DefaultCompanyId` | `1` | Company used when the user has no `company_id` claim (until real auth exists). |
 | `Database:MigrateOnStartup` | `true` in Development | Apply migrations at startup. Keep it off in production. |
-
-`Documents` settings are validated at startup; the app refuses to start with invalid values.
 
 ### Secrets in Azure
 
